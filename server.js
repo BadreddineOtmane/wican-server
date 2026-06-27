@@ -17,23 +17,17 @@ const app = express();
 app.use(express.json({ limit: '32kb' }));
 
 const DEVICE_TOKEN = process.env.DEVICE_TOKEN || 'brauto-dev-token';
-const PORT = process.env.PORT || 8000;
+// Pterodactyl-style hosts (WispByte) pass the allocated port as SERVER_PORT.
+const PORT = process.env.PORT || process.env.SERVER_PORT || 8000;
 
-// Seeded with a real snapshot so the dashboard shows something immediately.
+// Empty until the truck gateway posts real data. Dashboard shows "—" / offline.
 let state = {
-  vin: 'XLRTEH4300G181727',
-  rpm: 0, speed_kmh: 0, coolant_c: 57, oil_temp_c: 50.6, fuel_temp_c: 55,
-  intake_temp_c: 58, exhaust_temp_c: 52, amb_temp_c: 26.0, atmo_kpa: 101.5,
-  boost_kpa: 2, fuel_pct: 56, def_pct: 61, def_temp_c: 27, fuel_rate_lph: 0,
-  fuel_trip_l: 8741.0, fuel_total_l: 341864.5, oil_press_kpa: 20, fuel_press_kpa: 20,
-  batt_v: 0, engine_hours: 17695.0, vehicle_hours: 18719.5, odo_km: 1040763.9,
-  lamps: { mil: 1, stop: 0, warn: 1, prot: 1 }, dtc_count: 24,
-  dtcs: [
-    { spn: 1071, fmi: 5, oc: 126 }, { spn: 5109, fmi: 19, oc: 113 },
-    { spn: 3217, fmi: 19, oc: 113 }, { spn: 3821, fmi: 11, oc: 126 },
-    { spn: 1347, fmi: 16, oc: 25 }
-  ],
-  server_ts: 0, fresh: false
+  vin: null,
+  lamps: { mil: 0, stop: 0, warn: 0, prot: 0 },
+  dtc_count: 0,
+  dtcs: [],
+  server_ts: 0,
+  fresh: false
 };
 
 app.post('/api/ingest', (req, res) => {
@@ -53,4 +47,4 @@ app.get('/api/latest', (req, res) => {
 app.get('/health', (req, res) => res.type('text').send('ok'));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.listen(PORT, () => console.log(`BRA server on :${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`BRA server on 0.0.0.0:${PORT}`));
