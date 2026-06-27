@@ -1,0 +1,16 @@
+{
+  "name": "bra-telematics-server",
+  "version": "1.0.0",
+  "description": "Bonne Route Auto - truck telematics server (Node/Express)",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

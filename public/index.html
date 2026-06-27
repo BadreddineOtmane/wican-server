@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bonne Route Auto — Tableau de bord camion</title>
+<style>
+  :root{--bg:#0d1117;--card:#161b22;--line:#21262d;--txt:#e6edf3;--muted:#8b949e;
+        --accent:#2f81f7;--ok:#3fb950;--warn:#d29922;--bad:#f85149;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--txt);
+       font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}
+  header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 20px;
+         border-bottom:1px solid var(--line);background:#0a0d12;}
+  header h1{font-size:18px;margin:0;font-weight:600;}
+  .vin{font-family:ui-monospace,monospace;color:var(--muted);font-size:13px;}
+  .status{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--bad);}
+  .dot.on{background:var(--ok);box-shadow:0 0 8px var(--ok);}
+  main{padding:20px;max-width:1100px;margin:0 auto;}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .card .label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em;}
+  .card .value{font-size:30px;font-weight:650;margin-top:6px;line-height:1;}
+  .card .unit{font-size:14px;color:var(--muted);font-weight:400;margin-left:4px;}
+  .card.warn{border-color:var(--warn);} .card.bad{border-color:var(--bad);}
+  h2{font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:26px 0 10px;}
+  .lamps{display:flex;gap:10px;flex-wrap:wrap;}
+  .lamp{padding:8px 12px;border-radius:8px;border:1px solid var(--line);font-size:13px;
+        font-weight:600;background:#10151c;color:var(--muted);}
+  .lamp.on.mil{background:#3a1f00;color:#ffb703;border-color:#ffb703;}
+  .lamp.on.stop{background:#3a0d0d;color:var(--bad);border-color:var(--bad);}
+  .lamp.on.warn{background:#3a2f00;color:var(--warn);border-color:var(--warn);}
+  .lamp.on.prot{background:#10243a;color:var(--accent);border-color:var(--accent);}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px;}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);}
+  th{color:var(--muted);font-weight:500;font-size:12px;text-transform:uppercase;}
+  td.spn{font-family:ui-monospace,monospace;} .occ{color:var(--muted);}
+  .badge{display:inline-block;background:var(--bad);color:#fff;border-radius:10px;
+         padding:1px 9px;font-size:12px;font-weight:700;margin-left:8px;}
+  footer{color:var(--muted);font-size:12px;text-align:center;padding:18px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🚚 Bonne Route Auto</h1>
+  <span class="vin" id="vin">—</span>
+  <div class="status"><span class="dot" id="dot"></span><span id="statusText">connexion…</span></div>
+</header>
+<main>
+  <div class="grid">
+    <div class="card"><div class="label">Régime</div><div class="value"><span id="rpm">—</span><span class="unit">tr/min</span></div></div>
+    <div class="card"><div class="label">Vitesse</div><div class="value"><span id="speed">—</span><span class="unit">km/h</span></div></div>
+    <div class="card" id="c_coolant"><div class="label">Liquide refr.</div><div class="value"><span id="coolant">—</span><span class="unit">°C</span></div></div>
+    <div class="card"><div class="label">Niveau carburant</div><div class="value"><span id="fuel">—</span><span class="unit">%</span></div></div>
+    <div class="card"><div class="label">AdBlue / DEF</div><div class="value"><span id="def">—</span><span class="unit">%</span></div></div>
+    <div class="card"><div class="label">Batterie</div><div class="value"><span id="batt">—</span><span class="unit">V</span></div></div>
+  </div>
+  <h2>Moteur</h2>
+  <div class="grid">
+    <div class="card"><div class="label">Temp. huile</div><div class="value"><span id="oilt">—</span><span class="unit">°C</span></div></div>
+    <div class="card"><div class="label">Pression huile</div><div class="value"><span id="oilp">—</span><span class="unit">kPa</span></div></div>
+    <div class="card"><div class="label">Temp. carburant</div><div class="value"><span id="fuelt">—</span><span class="unit">°C</span></div></div>
+    <div class="card"><div class="label">Débit carburant</div><div class="value"><span id="frate">—</span><span class="unit">L/h</span></div></div>
+    <div class="card"><div class="label">Suralim. (boost)</div><div class="value"><span id="boost">—</span><span class="unit">kPa</span></div></div>
+    <div class="card"><div class="label">Temp. échapp.</div><div class="value"><span id="exh">—</span><span class="unit">°C</span></div></div>
+    <div class="card"><div class="label">Temp. admission</div><div class="value"><span id="intake">—</span><span class="unit">°C</span></div></div>
+    <div class="card"><div class="label">Temp. ambiante</div><div class="value"><span id="amb">—</span><span class="unit">°C</span></div></div>
+  </div>
+  <h2>Totaux véhicule</h2>
+  <div class="grid">
+    <div class="card"><div class="label">Odomètre</div><div class="value"><span id="odo">—</span><span class="unit">km</span></div></div>
+    <div class="card"><div class="label">Heures moteur</div><div class="value"><span id="ehours">—</span><span class="unit">h</span></div></div>
+    <div class="card"><div class="label">Carburant total</div><div class="value"><span id="ftotal">—</span><span class="unit">L</span></div></div>
+    <div class="card"><div class="label">Carburant trajet</div><div class="value"><span id="ftrip">—</span><span class="unit">L</span></div></div>
+  </div>
+  <h2>Défauts actifs (DM1) <span class="badge" id="dtcBadge" style="display:none">0</span></h2>
+  <div class="lamps">
+    <span class="lamp mil" id="lampMil">MIL</span>
+    <span class="lamp stop" id="lampStop">STOP</span>
+    <span class="lamp warn" id="lampWarn">WARN</span>
+    <span class="lamp prot" id="lampProt">PROTECT</span>
+  </div>
+  <table>
+    <thead><tr><th>SPN</th><th>FMI</th><th>Description</th><th>Occ.</th></tr></thead>
+    <tbody id="dtcBody"><tr><td colspan="4" class="occ">Aucun défaut</td></tr></tbody>
+  </table>
+</main>
+<footer>Mise à jour <span id="age">—</span> • Bonne Route Auto • J1939 / WiCAN</footer>
+<script>
+const FMI={0:"Donnée trop haute",1:"Donnée trop basse",2:"Donnée erratique",3:"Tension haute / c-c +",
+4:"Tension basse / c-c masse",5:"Courant bas / circuit ouvert",6:"Courant haut / c-c masse",
+7:"Mauvaise réponse mécanique",8:"Fréquence anormale",9:"Mise à jour anormale",10:"Variation anormale",
+11:"Non identifiable",12:"Composant en défaut",13:"Calibration",14:"Instruction spéciale",
+15:"Haut (mineur)",16:"Haut (modéré)",17:"Bas (mineur)",18:"Bas (modéré)",19:"Erreur réseau CAN",
+20:"Dérive haute",21:"Dérive basse",31:"Condition présente"};
+const $=id=>document.getElementById(id);
+const f1=(v,d=0)=>(v===null||v===undefined||v==="")?"—":(typeof v==="number"?v.toFixed(d):v);
+function setCardClass(id,l){const c=$(id);if(c){c.classList.remove('warn','bad');if(l)c.classList.add(l);}}
+async function tick(){
+  let d;
+  try{ d=await(await fetch('/api/latest',{cache:'no-store'})).json(); }
+  catch(e){ $('statusText').textContent='hors ligne'; $('dot').classList.remove('on'); return; }
+  $('dot').classList.toggle('on',!!d.online);
+  $('statusText').textContent=d.online?'en ligne':'silencieux';
+  $('vin').textContent=d.vin||'—';
+  $('rpm').textContent=f1(d.rpm); $('speed').textContent=f1(d.speed_kmh,0);
+  $('coolant').textContent=f1(d.coolant_c); $('fuel').textContent=f1(d.fuel_pct);
+  $('def').textContent=f1(d.def_pct); $('batt').textContent=f1(d.batt_v,1);
+  $('oilt').textContent=f1(d.oil_temp_c,1); $('oilp').textContent=f1(d.oil_press_kpa);
+  $('fuelt').textContent=f1(d.fuel_temp_c); $('frate').textContent=f1(d.fuel_rate_lph,1);
+  $('boost').textContent=f1(d.boost_kpa); $('exh').textContent=f1(d.exhaust_temp_c);
+  $('intake').textContent=f1(d.intake_temp_c); $('amb').textContent=f1(d.amb_temp_c,1);
+  $('odo').textContent=f1(d.odo_km,1); $('ehours').textContent=f1(d.engine_hours,1);
+  $('ftotal').textContent=f1(d.fuel_total_l,1); $('ftrip').textContent=f1(d.fuel_trip_l,1);
+  setCardClass('c_coolant', d.coolant_c>=100?'bad':(d.coolant_c>=95?'warn':null));
+  const L=d.lamps||{};
+  $('lampMil').classList.toggle('on',!!L.mil); $('lampStop').classList.toggle('on',!!L.stop);
+  $('lampWarn').classList.toggle('on',!!L.warn); $('lampProt').classList.toggle('on',!!L.prot);
+  const dtcs=d.dtcs||[]; const badge=$('dtcBadge');
+  if(d.dtc_count>0){badge.style.display='inline-block';badge.textContent=d.dtc_count;}else badge.style.display='none';
+  const body=$('dtcBody');
+  if(!dtcs.length){body.innerHTML='<tr><td colspan="4" class="occ">Aucun défaut</td></tr>';}
+  else body.innerHTML=dtcs.map(t=>`<tr><td class="spn">${t.spn}</td><td>${t.fmi}</td><td>${FMI[t.fmi]||'—'}</td><td class="occ">${t.oc??'—'}</td></tr>`).join('');
+  $('age').textContent=(d.age_s!=null)?`il y a ${d.age_s}s`:'—';
+}
+tick(); setInterval(tick,1500);
+</script>
+</body>
+</html>
